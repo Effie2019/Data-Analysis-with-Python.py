@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pylab as plt
 import seaborn as sns
+from scipy import stats
 #1.IMPORT DATA
 # Read the online file by the URL provides above, and assign it to variable "df", no header
 other_path = "https://s3-api.us-geo.objectstorage.softlayer.net/cf-courses-data/CognitiveClass/DA0101EN/auto.csv"
@@ -66,3 +67,31 @@ sns.regplot(x="highway-mpg", y="price", data=df)
 plt.ylim(0,)#the start point of y is 0
 sns.boxplot(x="body-style", y="price", data=df)
 
+#VALUE COUNT
+df['drive-wheels'].value_counts() #Count value in each group
+df['drive-wheels'].value_counts().to_frame() #Convert to df
+drive_wheels_counts.index.name = 'drive-wheels' #Give index name
+drive_wheels_counts
+#GROUPING
+df['drive-wheels'].unique() #Check the number of the groups
+#1.Group by 1 var
+df_group_one = df[['drive-wheels','body-style','price']] 
+df_group_one = df_group_one.groupby(['drive-wheels'],as_index=False).mean()
+#2.Group by 2 vars
+df_gptest = df[['drive-wheels','body-style','price']]
+grouped_test1 = df_gptest.groupby(['drive-wheels','body-style'],as_index=False).mean()
+#3.Visulized in pivot table
+grouped_pivot = grouped_test1.pivot(index='drive-wheels',columns='body-style')
+
+#Pearson Correlation Coefficient and P-value
+pearson_coef, p_value = stats.pearsonr(df['horsepower'], df['price'])
+print("The Pearson Correlation Coefficient is", pearson_coef, " with a P-value of P = ", p_value)  
+
+#ANOVA
+#1.Group the data by 'drive-wheels'
+grouped_test2=df_gptest[['drive-wheels', 'price']].groupby(['drive-wheels'])
+#2.Obtain the values of the method group
+grouped_test2.get_group('4wd')['price']
+#3. ANOVE
+f_val, p_val = stats.f_oneway(grouped_test2.get_group('fwd')['price'], grouped_test2.get_group('rwd')['price'], grouped_test2.get_group('4wd')['price'])  
+print( "ANOVA results: F=", f_val, ", P =", p_val)   
